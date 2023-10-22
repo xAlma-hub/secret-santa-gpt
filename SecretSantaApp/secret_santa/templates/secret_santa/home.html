@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secret Santa Home</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function addDeleteButton(deleteLink) {
+            deleteLink.on("click", function(e) {
+                e.preventDefault();
+                var deleteUrl = deleteLink.attr("href");
+                var listItem = deleteLink.closest("li");
+    
+                // Get the CSRF token from the HTML element
+                var csrftoken = $("#csrf-token").data("csrf");
+    
+                $.ajax({
+                    type: "DELETE",
+                    url: deleteUrl,
+                    headers: {
+                        "X-CSRFToken": csrftoken,
+                    },
+                    success: function(response) {
+                        if (response.message === "Name deleted successfully" || response.message === "Rule deleted successfully") {
+                            listItem.remove();
+                        }
+                    },
+                });
+            });
+        }
+
+        function updateDropdownOptions(name) {
+            var option = "<option value='" + name.id + "'>" + name.name + "</option>";
+            $("#name1, #name2").append(option);
+        }
+    
+    
+        $(document).ready(function() {
+            $(".delete-link").each(function() {
+                addDeleteButton($(this));
+            });
+        
+            $("#add-name-form").on("submit", function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'add_name' %}",
+                    data: formData,
+                    success: function(response) {
+                        if (response.name) {
+                            var nameId = response.id;  // Add this line to get the ID
+                            $("#names-list").append("<li>" + response.name + " <a href='{% url 'delete_name' 0 %}' class='delete-link' data-id='" + nameId + "'>Delete</a></li>");
+                            $("#name-input").val("");
+                            addDeleteButton($("#names-list li:last-child .delete-link"));
+                            // Update the dropdown options with the new name
+                            updateDropdownOptions(response);
+                        }
+                    },
+                });
+            });
+        
+            $("#add-rule-form").on("submit", function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'add_rule' %}",
+                    data: formData,
+                    success: function(response) {
+                        if (response.name1 && response.name2) {
+                            var ruleText = response.name1 + " is connected to " + response.name2;
+                            var ruleId = response.id;  // Add this line to get the ID
+                            $("#rules-list").append("<li>" + ruleText + " <a href='{% url 'delete_rule' 0 %}' class='delete-link' data-id='" + ruleId + "'>Delete</a></li>");
+                            $("#name1").val("");
+                            $("#name2").val("");
+                            addDeleteButton($("#rules-list li:last-child .delete-link"));
+                        }
+                    },
+                });
+            });
+        });
+        
+    </script>    
+</head>
+<body>
+    <!-- Add this line to include the CSRF token in your template -->
+    <div id="csrf-token" data-csrf="{{ csrf_token }}"></div>
+
+    <h1>Secret Santa - Enter Names and Rules</h1>
+    
+    <h2>Enter Names</h2>
+    <form id="add-name-form">
+        {% csrf_token %}
+        <input type="text" name="name" id="name-input" placeholder="Enter a name">
+        <button type="submit">Add Name</button>
+    </form>
+
+    <h2>Add Rule</h2>
+    <form id="add-rule-form">
+        {% csrf_token %}
+        {{ rule_form.name1.label_tag }}
+        <select name="name1" id="name1">
+            <option value="" disabled selected>Select Name 1</option>
+            {% for name in names %}
+                <option value="{{ name.id }}">{{ name.name }}</option>
+            {% endfor %}
+        </select>
+        {{ rule_form.name2.label_tag }}
+        <select name="name2" id="name2">
+            <option value="" disabled selected>Select Name 2</option>
+            {% for name in names %}
+                <option value="{{ name.id }}">{{ name.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Add Rule</button>
+    </form>
+
+    <h2>Names</h2>
+    <ul id="names-list">
+        {% for name in names %}
+            <li>{{ name.name }} 
+                <a href="{% url 'delete_name' name.id %}" class="delete-link">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Rules</h2>
+    <ul id="rules-list">
+        {% for rule in rules %}
+            <li>{{ rule.name1.name }} is connected to {{ rule.name2.name }}
+                <a href="{% url 'delete_rule' rule.id %}" class="delete-link">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+    
+</body>
+</html>

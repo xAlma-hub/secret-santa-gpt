@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secret Santa Result</title>
+</head>
+<body>
+    <h1>Secret Santa - Results</h1>
+    
+    <h2>Secret Santa Assignments</h2>
+    <ul>
+        {% for name, assigned_name in secret_santa_results.items %}
+            <li>{{ name }} is assigned to {{ assigned_name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

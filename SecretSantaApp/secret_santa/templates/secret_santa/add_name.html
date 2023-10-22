@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Names</title>
+</head>
+<body>
+    <h1>Add Names</h1>
+
+    <h2>Enter Names</h2>
+    <form method="post" action="{% url 'add_name' %}">
+        {% csrf_token %}
+        {{ name_form.as_p }}
+        <button type="submit">Add Name</button>
+    </form>
+
+    <h2>Current Names</h2>
+    <ul>
+        {% for name in names %}
+            <li>{{ name.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'home' %}">Go Back to Secret Santa</a>
+</body>
+</html>

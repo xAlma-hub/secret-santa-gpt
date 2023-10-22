@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Rules</title>
+</head>
+<body>
+    <h1>Add Rules</h1>
+
+    <h2>Add Rule</h2>
+    <form method="post" action="{% url 'add_rule' %}">
+        {% csrf_token %}
+        {{ rule_form.name1.label_tag }}
+        <select name="name1">
+            <option value="" disabled selected>Select Name 1</option>
+            {% for name in names %}
+                <option value="{{ name.id }}">{{ name.name }}</option>
+            {% endfor %}
+        </select>
+        {{ rule_form.name2.label_tag }}
+        <select name="name2">
+            <option value="" disabled selected>Select Name 2</option>
+            {% for name in names %}
+                <option value="{{ name.id }}">{{ name.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Add Rule</button>
+    </form>
+
+    <h2>Current Rules</h2>
+    <ul>
+        {% for rule in rules %}
+            <li>{{ rule.name1.name }} is connected to {{ rule.name2.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'home' %}">Go Back to Secret Santa</a>
+</body>
+</html>
